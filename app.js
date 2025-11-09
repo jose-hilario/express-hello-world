@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Set port and verify_token
 const port = process.env.PORT || 3000;
-const verifyToken = 1234;
+const verifyToken = process.env.VERIFY_TOKEN;
 
 // Route for GET requests
 app.get('/webhook', (req, res) => {
@@ -27,8 +27,20 @@ app.get('/webhook', (req, res) => {
 app.post('/webhook', (req, res) => {
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
   console.log(`\n\nWebhook received ${timestamp}\n`);
-  console.log(JSON.stringify(req.body, null, 2));
-  res.status(200).end();
+  let body = req.body;
+  
+  console.dir(body, { depth: null });
+
+  if (body.object === "page") {
+    body.entry.forEach(function(entry) {
+      let webhookEvent = entry.messaging[0];
+      console.log(webhookEvent);
+      // Process webhookEvent based on your logic
+    });
+    res.status(200).send("EVENT_RECEIVED");
+  } else {
+    res.sendStatus(404); // Not Found
+  }
 });
 
 // Start the server
